@@ -1,0 +1,27 @@
+
+# certbot --apache -n --agree-tos  --email root@dang.ovh
+
+
+#certbot certonly --non-interactive --agree-tos --apache --domain phpsysinfo.dang.ovh
+#certbot certonly --non-interactive --agree-tos --apache --domain phpsysinfo.dang.ovh --domain phpsysinfo-ca.dang.ovh --expand
+
+#- name: install new certificates on master (webroot)
+#  shell: "certbot certonly --webroot -w {{ webroot_directory }} -d {{ item }} --email {{ letsencrypt_email }} --keep --non-interactive --agree-tos"
+#  with_items: "{{ ssl_certificates }}"
+#  changed_when: "'Keeping the existing certificate' not in base_result.stderr"
+#  register: base_result
+
+
+- debug:
+    msg: "certbot certonly --non-interactive --agree-tos --apache --domain {{ site.name }}{{ hostname }}.{{ domain }}    --expand"
+
+#--domain {{ site.name }}.{{ domain }}
+- name: certificat {{ site.name }}{{ hostname }}.{{ domain }} 
+  shell: "certbot certonly --non-interactive --agree-tos --apache --domain {{ site.name }}{{ hostname }}.{{ domain }}    --expand"
+#  ignore_errors: yes
+  notify:
+    - restart apache
+  tags: letsencrypt
+
+
+

@@ -1,0 +1,69 @@
+---
+#3
+
+- name: Add utf8 charset
+  lineinfile:
+    dest: "{{ apache_server_root }}/conf-available/charset.conf"
+    backup: no
+    regexp: 'AddDefaultCharset'
+    line: 'AddDefaultCharset UTF-8'
+  notify: restart apache
+
+- name: Enable Apache mods.
+  file:
+    src: "{{ apache_server_root }}/mods-available/{{ item }}"
+    dest: "{{ apache_server_root }}/mods-enabled/{{ item }}"
+    state: link
+  with_items: "{{ apache_mods_enabled }}"
+  notify: restart apache
+
+- name: Disable Apache mods.
+  file:
+    path: "{{ apache_server_root }}/mods-enabled/{{ item }}"
+    state: absent
+  with_items: "{{ apache_mods_disabled }}"
+  notify: restart apache
+
+# install site from git
+- include_tasks: install.yml
+  when: site.type == "git"
+  with_items: "{{ apache_vhosts }}"
+  loop_control:
+    loop_var: site
+ 
+
+
+
+# install site from other link ( ie site/mobile_site)
+- include_tasks: link.yml
+  when: site.type == "link"
+  with_items: "{{ apache_vhosts }}"
+  loop_control:
+    loop_var: site
+
+#copy conf to site
+- name: "Copy site from template {{ apache_site_available_location }}"
+  template:
+    src=vhosts.conf.j2
+    dest={{ apache_site_available_location }}/{{item.servername}} 
+    backup=no
+    mode=0644
+  with_items: "{{ apache_vhosts }}"
+  notify:
+    - restart apache
+ 
+#- include_tasks: https.yml
+#  with_items: "{{ https_site }}"
+#  loop_control:
+#    loop_var: site
+
+- name: Enable Apache site.
+  file:
+    src: "{{ apache_server_root }}/sites-available/{{ item.servername }}"
+    dest: "{{ apache_server_root }}/sites-enabled/{{ item.servername }}"
+    state: link
+  with_items: "{{ apache_vhosts }}"
+  notify: restart apache
+
+
+

@@ -1,0 +1,10 @@
+#5
+- name: Create a symbolic link
+  file:
+    src: "{{ site.directory }}"
+    dest: "{{ apache_dest_dir }}/{{ site.servername }}"
+    state: link
+#  ignore_errors: yes
+
+
+

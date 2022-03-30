@@ -1,0 +1,11 @@
+- debug:
+    msg: "******************** install {{ site.project_repository }} ********************"
+
+- name: Clone / update  repository
+  git:
+    repo: "{{ site.project_repository }}"
+    dest: "{{ apache_dest_dir }}/{{ site.servername }}"
+    version: "{{ site.repository_version }}"
+
+
+

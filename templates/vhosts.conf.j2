@@ -1,0 +1,31 @@
+<VirtualHost *:80>
+	ServerAdmin root@dang.ovh
+	ServerName  {{item.servername}}
+	ServerAlias {{item.servername}}.dang.ovh {{item.servername}}-ca.dang.ovh
+	
+	DocumentRoot {{apache_document_root}}{{item.servername}}
+
+	<Directory {{apache_document_root}}{{item.servername}}>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	</Directory>
+
+    #443 only
+	#Redirect permanent / https://rainloop-ca.dang.ovh/
+
+
+	ErrorLog /var/log/apache2/error_{{item.servername}}.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog /var/log/apache2/access_{{item.servername}}.log combined
+
+</VirtualHost>
+
+
+
+

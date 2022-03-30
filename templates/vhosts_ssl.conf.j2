@@ -1,0 +1,28 @@
+<VirtualHost *:443>
+	ServerAdmin root@dang.ovh
+	ServerName rainloop.dang.ovh
+	ServerAlias rainloop-ca.dang.ovh
+	
+	DocumentRoot /var/www/rainloop
+	<Directory /var/www/rainloop>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	</Directory>
+
+	ErrorLog /var/log/apache2/error_rainloop.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog /var/log/apache2/access_rainloop.log combined
+
+    	SSLEngine on
+    	SSLCertificateFile    /etc/letsencrypt/live/rainloop-ca.dang.ovh/fullchain.pem
+    	SSLCertificateKeyFile /etc/letsencrypt/live/rainloop-ca.dang.ovh/privkey.pem
+
+
+</VirtualHost>
+
