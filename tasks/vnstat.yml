@@ -1,0 +1,27 @@
+- name: construct interface
+  set_fact: 
+    interfaces:  "{{  interface_list | map(attribute='name')|map('to_json')| join(',') }}"
+  
+- name: Setup interface
+  lineinfile:
+    dest: /var/www/vnstat/config.php
+    backup: no
+    regexp: "iface_list"
+    line: '    $iface_list  = array( {{ interfaces }} );'
+
+- name: Interface list
+  lineinfile:
+    dest: /var/www/vnstat/config.php
+    backup: no
+    insertafter: "iface_title"
+    line: "    $iface_title['{{ item.name }}'] = '{{ item.description }}';"
+  with_items: "{{ interface_list }}"
+
+
+- name: timezone
+  lineinfile:
+    dest: /var/www/vnstat/config.php
+    backup: no
+    regexp: "date_default_timezone_set"
+    line: "    date_default_timezone_set(\"{{ timezone }}\") ;"
+

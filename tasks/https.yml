@@ -1,27 +1,23 @@
-
-# certbot --apache -n --agree-tos  --email root@dang.ovh
-
-
-#certbot certonly --non-interactive --agree-tos --apache --domain phpsysinfo.dang.ovh
-#certbot certonly --non-interactive --agree-tos --apache --domain phpsysinfo.dang.ovh --domain phpsysinfo-ca.dang.ovh --expand
-
-#- name: install new certificates on master (webroot)
-#  shell: "certbot certonly --webroot -w {{ webroot_directory }} -d {{ item }} --email {{ letsencrypt_email }} --keep --non-interactive --agree-tos"
-#  with_items: "{{ ssl_certificates }}"
-#  changed_when: "'Keeping the existing certificate' not in base_result.stderr"
-#  register: base_result
-
-
 - debug:
-    msg: "certbot certonly --non-interactive --agree-tos --apache --domain {{ site.name }}{{ hostname }}.{{ domain }}    --expand"
+    msg: "******************** install {{ site.servername }}-{{ hostname }}.{{ domain }} ********************"
 
-#--domain {{ site.name }}.{{ domain }}
-- name: certificat {{ site.name }}{{ hostname }}.{{ domain }} 
-  shell: "certbot certonly --non-interactive --agree-tos --apache --domain {{ site.name }}{{ hostname }}.{{ domain }}    --expand"
-#  ignore_errors: yes
+- name: certificat  main
+  shell: "certbot certonly --non-interactive --agree-tos --{{certbot_type}} --email root@dang.ovh  --domain {{ hostname }}.{{ domain }} --expand"
+  ignore_errors: yes
+  when: site.main is defined
+  register: result
   notify:
     - restart apache
-  tags: letsencrypt
 
+- name: certificat
+  shell: "certbot certonly --non-interactive --agree-tos --{{certbot_type}} --email root@dang.ovh  --domain {{ site.servername }}-{{ hostname }}.{{ domain }} --expand"
+  ignore_errors: yes
+  when: site.main is not defined
+  register: result
+  notify:
+    - restart apache
 
-
+- name: construct ssl
+  set_fact:
+    apache_vhosts_ssl: "{{ apache_vhosts_ssl + [site] }}"
+  when: result.failed is false

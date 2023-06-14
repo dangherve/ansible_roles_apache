@@ -6,6 +6,8 @@
     repo: "{{ site.project_repository }}"
     dest: "{{ apache_dest_dir }}/{{ site.servername }}"
     version: "{{ site.repository_version }}"
+    force: yes
 
-
-
+- name: specific task if define
+  include_tasks: "{{ site.specific }}.yml"
+  when: site.specific is defined

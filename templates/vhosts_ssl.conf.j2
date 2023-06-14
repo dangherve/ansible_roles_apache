@@ -1,27 +1,40 @@
 <VirtualHost *:443>
 	ServerAdmin root@dang.ovh
-	ServerName rainloop.dang.ovh
-	ServerAlias rainloop-ca.dang.ovh
+	ServerName  {{item.servername}}
 	
-	DocumentRoot /var/www/rainloop
-	<Directory /var/www/rainloop>
+{% if item.main is defined %}
+   	ServerAlias dang.ovh {{hostname}}.dang.ovh
+{% else %}
+   	ServerAlias {{item.servername}}.dang.ovh {{item.servername}}-{{hostname}}.dang.ovh
+{% endif %}
+	
+	DocumentRoot {{apache_document_root}}{{item.servername}}
+
+	<Directory {{apache_document_root}}{{item.servername}}>
 		Options Indexes FollowSymLinks MultiViews
 		AllowOverride None
 		Order allow,deny
 		allow from all
 	</Directory>
 
-	ErrorLog /var/log/apache2/error_rainloop.log
+	ErrorLog /var/log/apache2/error_ssl_{{item.servername}}.log
 
 	# Possible values include: debug, info, notice, warn, error, crit,
 	# alert, emerg.
 	LogLevel warn
 
-	CustomLog /var/log/apache2/access_rainloop.log combined
+	CustomLog /var/log/apache2/access_ssl_{{item.servername}}.log combined
 
-    	SSLEngine on
-    	SSLCertificateFile    /etc/letsencrypt/live/rainloop-ca.dang.ovh/fullchain.pem
-    	SSLCertificateKeyFile /etc/letsencrypt/live/rainloop-ca.dang.ovh/privkey.pem
+    SSLEngine on
+
+{% if item.main is defined %}
+    SSLCertificateFile    /etc/letsencrypt/live/{{hostname}}.dang.ovh/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{hostname}}.dang.ovh/privkey.pem
+{% else %}
+    SSLCertificateFile    /etc/letsencrypt/live/{{item.servername}}-{{hostname}}.dang.ovh/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{item.servername}}-{{hostname}}.dang.ovh/privkey.pem
+{% endif %}
+	
 
 
 </VirtualHost>

@@ -15,6 +15,7 @@ apache_packages:
   - phpsysinfo # in testing
   - phpmyadmin # in testing
   - certbot
+  - python3-certbot-apache
 
 
 #apache_ports_configuration_items:

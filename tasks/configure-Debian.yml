@@ -1,6 +1,14 @@
 ---
 #3
 
+- name: default ServerName
+  lineinfile:
+    dest: "{{ apache_server_root }}/apache2.conf"
+    backup: no
+    regexp: 'ServerName'
+    line: "ServerName {{ hostname }}"
+  notify: restart apache
+
 - name: Add utf8 charset
   lineinfile:
     dest: "{{ apache_server_root }}/conf-available/charset.conf"
@@ -30,8 +38,6 @@
   with_items: "{{ apache_vhosts }}"
   loop_control:
     loop_var: site
- 
-
 
 
 # install site from other link ( ie site/mobile_site)
@@ -42,28 +48,62 @@
     loop_var: site
 
 #copy conf to site
-- name: "Copy site from template {{ apache_site_available_location }}"
+- name: Copy site from template
   template:
     src=vhosts.conf.j2
-    dest={{ apache_site_available_location }}/{{item.servername}} 
+    dest={{ apache_site_available_location }}/{{item.servername}}.conf
     backup=no
     mode=0644
   with_items: "{{ apache_vhosts }}"
   notify:
     - restart apache
  
-#- include_tasks: https.yml
-#  with_items: "{{ https_site }}"
-#  loop_control:
-#    loop_var: site
+#NEED DETECT apache running standalone
+- name: Check apache2
+  shell: systemctl status apache2.service | grep Active | awk -v N=2 '{print $N}'
+  register: output
+
+- name: cerbot type apache
+  set_fact:
+    certbot_type:  "apache"
+  when:  output.stdout == 'started'
+
+- name: cerbot type standalone
+  set_fact:
+    certbot_type:  "standalone"
+  when:  output.stdout != 'started'
+
+
+- include_tasks: https.yml
+  with_items: "{{ apache_vhosts }}"
+  loop_control:
+    loop_var: site
+
+#copy conf to site
+- name: Copy site from template ssl
+  template:
+    src=vhosts_ssl.conf.j2
+    dest={{ apache_site_available_location }}/{{item.servername}}_ssl.conf
+    backup=no
+    mode=0644
+  with_items: "{{ apache_vhosts }}"
+  notify:
+    - restart apache
 
 - name: Enable Apache site.
   file:
-    src: "{{ apache_server_root }}/sites-available/{{ item.servername }}"
-    dest: "{{ apache_server_root }}/sites-enabled/{{ item.servername }}"
+    src: "{{ apache_server_root }}/sites-available/{{ item.servername }}.conf"
+    dest: "{{ apache_server_root }}/sites-enabled/{{ item.servername }}.conf"
     state: link
   with_items: "{{ apache_vhosts }}"
   notify: restart apache
 
+- name: Enable Apache ssl site.
+  file:
+    src: "{{ apache_server_root }}/sites-available/{{ item.servername }}_ssl.conf"
+    dest: "{{ apache_server_root }}/sites-enabled/{{ item.servername }}_ssl.conf"
+    state: link
+  with_items: "{{ apache_vhosts }}"
+  notify: restart apache
 
 

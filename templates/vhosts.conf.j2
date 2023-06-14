@@ -1,8 +1,24 @@
 <VirtualHost *:80>
 	ServerAdmin root@dang.ovh
 	ServerName  {{item.servername}}
-	ServerAlias {{item.servername}}.dang.ovh {{item.servername}}-ca.dang.ovh
 	
+{% if item.main is defined %}
+   	ServerAlias dang.ovh {{hostname}}.dang.ovh
+{% else %}
+   	ServerAlias {{item.servername}}.dang.ovh {{item.servername}}-{{hostname}}.dang.ovh
+{% endif %}
+
+{% if item.secure_only is defined %}
+    #443 only
+
+{% if item.main is defined %}
+    Redirect permanent / https://{{hostname}}.dang.ovh
+
+{% else %}
+    Redirect permanent / https://{{item.servername}}-{{hostname}}.dang.ovh
+{% endif %}
+	
+{% else %}
 	DocumentRoot {{apache_document_root}}{{item.servername}}
 
 	<Directory {{apache_document_root}}{{item.servername}}>
@@ -11,10 +27,7 @@
 		Order allow,deny
 		allow from all
 	</Directory>
-
-    #443 only
-	#Redirect permanent / https://rainloop-ca.dang.ovh/
-
+{% endif %}
 
 	ErrorLog /var/log/apache2/error_{{item.servername}}.log
 
