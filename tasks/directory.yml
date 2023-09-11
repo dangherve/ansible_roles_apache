@@ -1,0 +1,7 @@
+#5
+- name: Create directory
+  file:
+    path: "{{ site.directory }}"
+    state: directory
+    mode: '0755'
+

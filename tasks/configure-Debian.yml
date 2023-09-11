@@ -47,6 +47,14 @@
   loop_control:
     loop_var: site
 
+# directory ie site/mobile_site)
+- include_tasks: directory.yml
+  when: site.type == "directory"
+  with_items: "{{ apache_vhosts }}"
+  loop_control:
+    loop_var: site
+
+
 #copy conf to site
 - name: Copy site from template
   template:
@@ -78,6 +86,12 @@
   with_items: "{{ apache_vhosts }}"
   loop_control:
     loop_var: site
+
+- name: renew certicat
+  shell: "certbot renew"
+  ignore_errors: yes
+  notify:
+    - restart apache
 
 #copy conf to site
 - name: Copy site from template ssl

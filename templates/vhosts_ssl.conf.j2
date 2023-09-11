@@ -11,7 +11,7 @@
 	DocumentRoot {{apache_document_root}}{{item.servername}}
 
 	<Directory {{apache_document_root}}{{item.servername}}>
-		Options Indexes FollowSymLinks MultiViews
+		Options {{item.indexes | default('Indexes')}} FollowSymLinks MultiViews
 		AllowOverride None
 		Order allow,deny
 		allow from all
