@@ -17,7 +17,6 @@
     line: "    $iface_title['{{ item.name }}'] = '{{ item.description }}';"
   with_items: "{{ interface_list }}"
 
-
 - name: timezone
   lineinfile:
     dest: /var/www/vnstat/config.php
