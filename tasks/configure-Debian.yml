@@ -65,7 +65,7 @@
   with_items: "{{ apache_vhosts }}"
   notify:
     - restart apache
- 
+
 #NEED DETECT apache running standalone
 - name: Check apache2
   shell: systemctl status apache2.service | grep Active | awk -v N=2 '{print $N}'
@@ -93,23 +93,30 @@
   notify:
     - restart apache
 
+- stat:
+    path: /etc/letsencrypt/live/{{item.servername}}-{{hostname}}.dang.ovh/fullchain.pem
+  register: sym
+  with_items: "{{ apache_vhosts }}"
+
 #copy conf to site
 - name: Copy site from template ssl
   template:
     src=vhosts_ssl.conf.j2
-    dest={{ apache_site_available_location }}/{{item.servername}}_ssl.conf
+    dest={{ apache_site_available_location }}/{{site.servername}}_ssl.conf
     backup=no
     mode=0644
   with_items: "{{ apache_vhosts }}"
+  when: sym.stat.exists is true
   notify:
     - restart apache
 
-- name: Enable Apache site.
+- name: Enable Apache ssl site.
   file:
-    src: "{{ apache_server_root }}/sites-available/{{ item.servername }}.conf"
-    dest: "{{ apache_server_root }}/sites-enabled/{{ item.servername }}.conf"
+    src: "{{ apache_server_root }}/sites-available/{{ site.servername }}_ssl.conf"
+    dest: "{{ apache_server_root }}/sites-enabled/{{ site.servername }}_ssl.conf"
     state: link
   with_items: "{{ apache_vhosts }}"
+  when: sym.stat.exists is true
   notify: restart apache
 
 - name: Enable Apache ssl site.
