@@ -5,7 +5,6 @@
   shell: "certbot certonly --non-interactive --agree-tos --{{certbot_type}} --email root@dang.ovh  --domain {{ hostname }}.{{ domain }} --expand"
   args:
     creates: "/etc/letsencrypt/live/{{ hostname }}.{{ domain }}"
-  ignore_errors: yes
   when: site.main is defined
   register: result
   notify:
@@ -15,7 +14,6 @@
   shell: "certbot certonly --non-interactive --agree-tos --{{certbot_type}} --email root@dang.ovh  --domain {{ site.servername }}-{{ hostname }}.{{ domain }} --expand"
   args:
     creates: "/etc/letsencrypt/live/{{ site.servername }}-{{ hostname }}.{{ domain }}"
-  ignore_errors: yes
   when: site.main is not defined
   register: result
   notify:

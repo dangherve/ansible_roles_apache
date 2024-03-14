@@ -71,15 +71,19 @@
   shell: systemctl status apache2.service | grep Active | awk -v N=2 '{print $N}'
   register: output
 
+- debug:
+    msg: "{{output}}"
+
+
 - name: cerbot type apache
   set_fact:
     certbot_type:  "apache"
-  when:  output.stdout == 'started'
+  when:  output.stdout == 'active'
 
 - name: cerbot type standalone
   set_fact:
     certbot_type:  "standalone"
-  when:  output.stdout != 'started'
+  when:  output.stdout != 'active'
 
 
 - include_tasks: https.yml
@@ -88,8 +92,7 @@
     loop_var: site
 
 - name: renew certicat
-  shell: "certbot renew"
-  ignore_errors: yes
+  shell: "certbot renew --apache"
   notify:
     - restart apache
 
