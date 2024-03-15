@@ -1,23 +1,23 @@
 <VirtualHost *:80>
-	ServerAdmin root@dang.ovh
+	ServerAdmin {{ email }}
 	ServerName  {{item.servername}}
-	
+
 {% if item.main is defined %}
-   	ServerAlias dang.ovh {{hostname}}.dang.ovh
+   	ServerAlias {{ domain }} {{hostname}}.{{ domain }}
 {% else %}
-   	ServerAlias {{item.servername}}.dang.ovh {{item.servername}}-{{hostname}}.dang.ovh
+   	ServerAlias {{item.servername}}.{{ domain }} {{item.servername}}-{{hostname}}.{{ domain }}
 {% endif %}
 
 {% if item.secure_only is defined %}
     #443 only
 
 {% if item.main is defined %}
-    Redirect permanent / https://{{hostname}}.dang.ovh
+    Redirect permanent / https://{{hostname}}.{{ domain }}
 
 {% else %}
-    Redirect permanent / https://{{item.servername}}-{{hostname}}.dang.ovh
+    Redirect permanent / https://{{item.servername}}-{{hostname}}.{{ domain }}
 {% endif %}
-	
+
 {% else %}
 	DocumentRoot {{apache_document_root}}{{item.servername}}
 

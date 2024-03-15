@@ -1,8 +1,6 @@
 ---
 apache_enablerepo: ""
 
-
-
 apache_create_vhosts: true
 apache_vhosts_filename: "vhosts.conf"
 apache_vhosts_template: "vhosts.conf.j2"
@@ -35,12 +33,7 @@ apache_vhosts_ssl: []
 
 #apache_ignore_missing_ssl_certificate: true
 
-
-
-## OK
-
-letsencrypt_email: root@dang.ovh
-
+email: EMAIL
 
 apache_vhosts_path: '{{ playbook_dir }}/templates/apache/'
 

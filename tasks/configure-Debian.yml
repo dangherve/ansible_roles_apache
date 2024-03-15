@@ -97,7 +97,7 @@
     - restart apache
 
 - stat:
-    path: /etc/letsencrypt/live/{{item.servername}}-{{hostname}}.dang.ovh/fullchain.pem
+    path: /etc/letsencrypt/live/{{item.servername}}-{{hostname}}.{{ domain }}/fullchain.pem
   register: sym
   with_items: "{{ apache_vhosts }}"
 

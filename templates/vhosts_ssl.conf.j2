@@ -1,13 +1,13 @@
 <VirtualHost *:443>
-	ServerAdmin root@dang.ovh
+	ServerAdmin {{ email }}
 	ServerName  {{item.servername}}
-	
+
 {% if item.main is defined %}
-   	ServerAlias dang.ovh {{hostname}}.dang.ovh
+   	ServerAlias {{ domain }} {{hostname}}.{{ domain }}
 {% else %}
-   	ServerAlias {{item.servername}}.dang.ovh {{item.servername}}-{{hostname}}.dang.ovh
+   	ServerAlias {{item.servername}}.{{ domain }} {{item.servername}}-{{hostname}}.{{ domain }}
 {% endif %}
-	
+
 	DocumentRoot {{apache_document_root}}{{item.servername}}
 
 	<Directory {{apache_document_root}}{{item.servername}}>
@@ -28,13 +28,13 @@
     SSLEngine on
 
 {% if item.main is defined %}
-    SSLCertificateFile    /etc/letsencrypt/live/{{hostname}}.dang.ovh/fullchain.pem
-    SSLCertificateKeyFile /etc/letsencrypt/live/{{hostname}}.dang.ovh/privkey.pem
+    SSLCertificateFile    /etc/letsencrypt/live/{{hostname}}.{{ domain }}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{hostname}}.{{ domain }}/privkey.pem
 {% else %}
-    SSLCertificateFile    /etc/letsencrypt/live/{{item.servername}}-{{hostname}}.dang.ovh/fullchain.pem
-    SSLCertificateKeyFile /etc/letsencrypt/live/{{item.servername}}-{{hostname}}.dang.ovh/privkey.pem
+    SSLCertificateFile    /etc/letsencrypt/live/{{item.servername}}-{{hostname}}.{{ domain }}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{item.servername}}-{{hostname}}.{{ domain }}/privkey.pem
 {% endif %}
-	
+
 
 
 </VirtualHost>
