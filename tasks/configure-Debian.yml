@@ -71,10 +71,6 @@
   shell: systemctl status apache2.service | grep Active | awk -v N=2 '{print $N}'
   register: output
 
-- debug:
-    msg: "{{output}}"
-
-
 - name: cerbot type apache
   set_fact:
     certbot_type:  "apache"
@@ -84,7 +80,6 @@
   set_fact:
     certbot_type:  "standalone"
   when:  output.stdout != 'active'
-
 
 - include_tasks: https.yml
   with_items: "{{ apache_vhosts }}"
@@ -96,31 +91,16 @@
   notify:
     - restart apache
 
-- stat:
-    path: /etc/letsencrypt/live/{{item.servername}}-{{hostname}}.{{ domain }}/fullchain.pem
-  register: sym
-  with_items: "{{ apache_vhosts }}"
-
 #copy conf to site
 - name: Copy site from template ssl
   template:
     src=vhosts_ssl.conf.j2
-    dest={{ apache_site_available_location }}/{{site.servername}}_ssl.conf
+    dest={{ apache_site_available_location }}/{{ item.servername }}_ssl.conf
     backup=no
     mode=0644
   with_items: "{{ apache_vhosts }}"
-  when: sym.stat.exists is true
   notify:
     - restart apache
-
-- name: Enable Apache ssl site.
-  file:
-    src: "{{ apache_server_root }}/sites-available/{{ site.servername }}_ssl.conf"
-    dest: "{{ apache_server_root }}/sites-enabled/{{ site.servername }}_ssl.conf"
-    state: link
-  with_items: "{{ apache_vhosts }}"
-  when: sym.stat.exists is true
-  notify: restart apache
 
 - name: Enable Apache ssl site.
   file:

@@ -1,5 +1,5 @@
 ---
-# 1 
+# 1
 
 # Include variables and define needed variables.
 - name: Include OS-specific variables.
