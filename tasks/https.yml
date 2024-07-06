@@ -2,7 +2,7 @@
     msg: "******************** install {{ site.servername }}-{{ hostname }}.{{ domain }} ********************"
 
 - name: certificat  main
-  shell: "certbot certonly --non-interactive --agree-tos --{{certbot_type}} --email {{email}}  --domain {{ hostname }}.{{ domain }} --expand"
+  shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} --email {{ email }}  --domain {{ hostname }}.{{ domain }} --expand"
   args:
     creates: "/etc/letsencrypt/live/{{ hostname }}.{{ domain }}"
   when: site.main is defined
@@ -11,7 +11,7 @@
     - restart apache
 
 - name: certificat
-  shell: "certbot certonly --non-interactive --agree-tos --{{certbot_type}} --email {{email}}   --domain {{ site.servername }}-{{ hostname }}.{{ domain }} --expand"
+  shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} --email {{ email }}   --domain {{ site.servername }}-{{ hostname }}.{{ domain }} --expand"
   args:
     creates: "/etc/letsencrypt/live/{{ site.servername }}-{{ hostname }}.{{ domain }}"
   when: site.main is not defined

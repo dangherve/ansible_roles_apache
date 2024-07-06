@@ -1,38 +1,43 @@
 <VirtualHost *:443>
-	ServerAdmin {{ email }}
-	ServerName  {{item.servername}}
+    ServerAdmin {{ email }}
+    ServerName  {{ item.servername }}
 
 {% if item.main is defined %}
-   	ServerAlias {{ domain }} {{hostname}}.{{ domain }}
+       ServerAlias {{ domain }} {{ hostname }}.{{ domain }}
 {% else %}
-   	ServerAlias {{item.servername}}.{{ domain }} {{item.servername}}-{{hostname}}.{{ domain }}
+       ServerAlias {{ item.servername }}.{{ domain }} {{ item.servername }}-{{ hostname }}.{{ domain }}
 {% endif %}
 
-	DocumentRoot {{apache_document_root}}{{item.servername}}
 
-	<Directory {{apache_document_root}}{{item.servername}}>
-		Options {{item.indexes | default('Indexes')}} FollowSymLinks MultiViews
-		AllowOverride None
-		Order allow,deny
-		allow from all
-	</Directory>
+    {% if item.type == "proxy" %}
+    ProxyPass / https://{{ item.ip }}:{{ item.port }}/
+    ProxyPassReverse / https://{{ item.ip }}:{{ item.port }}/
+    {% else %}
+    DocumentRoot {{ apache_document_root }}{{ item.servername }}
 
-	ErrorLog /var/log/apache2/error_ssl_{{item.servername}}.log
+    <Directory {{ apache_document_root }}{{ item.servername }}>
+        Options {{ item.indexes | default('Indexes')}} FollowSymLinks MultiViews
+        AllowOverride None
+        Order allow,deny
+        allow from all
+    </Directory>
+    {% endif %}
+    ErrorLog /var/log/apache2/error_ssl_{{ item.servername }}.log
 
-	# Possible values include: debug, info, notice, warn, error, crit,
-	# alert, emerg.
-	LogLevel warn
+    # Possible values include: debug, info, notice, warn, error, crit,
+    # alert, emerg.
+    LogLevel warn
 
-	CustomLog /var/log/apache2/access_ssl_{{item.servername}}.log combined
+    CustomLog /var/log/apache2/access_ssl_{{ item.servername }}.log combined
 
     SSLEngine on
 
 {% if item.main is defined %}
-    SSLCertificateFile    /etc/letsencrypt/live/{{hostname}}.{{ domain }}/fullchain.pem
-    SSLCertificateKeyFile /etc/letsencrypt/live/{{hostname}}.{{ domain }}/privkey.pem
+    SSLCertificateFile    /etc/letsencrypt/live/{{ hostname }}.{{ domain }}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{ hostname }}.{{ domain }}/privkey.pem
 {% else %}
-    SSLCertificateFile    /etc/letsencrypt/live/{{item.servername}}-{{hostname}}.{{ domain }}/fullchain.pem
-    SSLCertificateKeyFile /etc/letsencrypt/live/{{item.servername}}-{{hostname}}.{{ domain }}/privkey.pem
+    SSLCertificateFile    /etc/letsencrypt/live/{{ item.servername }}-{{ hostname }}.{{ domain }}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{ item.servername }}-{{ hostname }}.{{ domain }}/privkey.pem
 {% endif %}
 
 

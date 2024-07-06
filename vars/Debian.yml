@@ -8,20 +8,21 @@ apache_server_root: /etc/apache2
 apache_document_root: /var/www/
 
 apache_packages:
-  - apache2
-  - apache2-utils
-  - mariadb-server
-  - python3-acme
-  - phpsysinfo # in testing
-  - phpmyadmin # in testing
-  - certbot
-  - python3-certbot-apache
+    - apache2
+    - apache2-utils
+    - mariadb-server
+    - python3-acme
+    - phpsysinfo # in testing
+    - phpmyadmin # in testing
+    - certbot
+    - python3-certbot-apache
+    - libxml2-dev
 
 
 #apache_ports_configuration_items:
 #  - regexp: "^Listen "
 #    line: "Listen {{ apache_listen_port }}"
-    
+
 #apache_vhosts_version: "2.4"
 #apache_default_vhost_filename: 000-default.conf
 

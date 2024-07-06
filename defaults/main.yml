@@ -54,9 +54,18 @@ apache_ssl_cipher_suite: "AES256+EECDH:AES256+EDH"
 
 # Only used on Debian/Ubuntu.
 apache_mods_enabled:
-  - rewrite.load
-  - ssl.load
-  - userdir.load
+    - rewrite
+    - ssl
+    - userdir
+    - proxy
+    - proxy_ajp
+    - proxy_http
+    - rewrite
+    - deflate
+    - headers
+    - proxy_balancer
+    - proxy_connect
+    - proxy_html
 
 apache_mods_disabled: []
 

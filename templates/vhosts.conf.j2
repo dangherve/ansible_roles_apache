@@ -1,41 +1,50 @@
 <VirtualHost *:80>
-	ServerAdmin {{ email }}
-	ServerName  {{item.servername}}
+    ServerAdmin {{ email }}
+    ServerName  {{ item.servername }}
 
 {% if item.main is defined %}
-   	ServerAlias {{ domain }} {{hostname}}.{{ domain }}
+    ServerAlias {{ domain }} {{ hostname }}.{{ domain }}
 {% else %}
-   	ServerAlias {{item.servername}}.{{ domain }} {{item.servername}}-{{hostname}}.{{ domain }}
+    ServerAlias {{ item.servername }}.{{ domain }} {{ item.servername }}-{{ hostname }}.{{ domain }}
 {% endif %}
 
 {% if item.secure_only is defined %}
     #443 only
 
-{% if item.main is defined %}
-    Redirect permanent / https://{{hostname}}.{{ domain }}
+    {% if item.main is defined %}
+    Redirect permanent / https://{{ hostname }}.{{ domain }}
+
+    {% else %}
+    Redirect permanent / https://{{ item.servername }}-{{ hostname }}.{{ domain }}
+    {% endif %}
 
 {% else %}
-    Redirect permanent / https://{{item.servername}}-{{hostname}}.{{ domain }}
+
+    {% if item.type == "proxy" %}
+    ProxyPass / http://{{ item.ip }}:{{ item.port }}/
+    ProxyPassReverse / http://{{ item.ip }}:{{ item.port }}/
+    ServerName localhost
+    {% else %}
+
+    DocumentRoot {{ apache_document_root }}{{ item.servername }}
+
+    <Directory {{ apache_document_root }}{{ item.servername }}>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride None
+        Order allow,deny
+        allow from all
+    </Directory>
+    {% endif %}
+
 {% endif %}
 
-{% else %}
-	DocumentRoot {{apache_document_root}}{{item.servername}}
+    ErrorLog /var/log/apache2/error_{{ item.servername }}.log
 
-	<Directory {{apache_document_root}}{{item.servername}}>
-		Options Indexes FollowSymLinks MultiViews
-		AllowOverride None
-		Order allow,deny
-		allow from all
-	</Directory>
-{% endif %}
+    # Possible values include: debug, info, notice, warn, error, crit,
+    # alert, emerg.
+    LogLevel warn
 
-	ErrorLog /var/log/apache2/error_{{item.servername}}.log
-
-	# Possible values include: debug, info, notice, warn, error, crit,
-	# alert, emerg.
-	LogLevel warn
-
-	CustomLog /var/log/apache2/access_{{item.servername}}.log combined
+    CustomLog /var/log/apache2/access_{{ item.servername }}.log combined
 
 </VirtualHost>
 

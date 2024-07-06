@@ -18,10 +18,9 @@
   notify: restart apache
 
 - name: Enable Apache mods.
-  file:
-    src: "{{ apache_server_root }}/mods-available/{{ item }}"
-    dest: "{{ apache_server_root }}/mods-enabled/{{ item }}"
-    state: link
+  apache2_module:
+    state: present
+    name: "{{ item }}"
   with_items: "{{ apache_mods_enabled }}"
   notify: restart apache
 
@@ -59,7 +58,7 @@
 - name: Copy site from template
   template:
     src=vhosts.conf.j2
-    dest={{ apache_site_available_location }}/{{item.servername}}.conf
+    dest={{ apache_site_available_location }}/{{ item.servername }}.conf
     backup=no
     mode=0644
   with_items: "{{ apache_vhosts }}"
