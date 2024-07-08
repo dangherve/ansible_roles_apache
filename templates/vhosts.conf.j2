@@ -7,25 +7,24 @@
 {% else %}
     ServerAlias {{ item.servername }}.{{ domain }} {{ item.servername }}-{{ hostname }}.{{ domain }}
 {% endif %}
-
-{% if item.secure_only is defined %}
+{% if item.secure_only is defined and item.secure_only == "true" %}
     #443 only
-
-    {% if item.main is defined %}
+{% if item.main is defined %}
     Redirect permanent / https://{{ hostname }}.{{ domain }}
-
-    {% else %}
-    Redirect permanent / https://{{ item.servername }}-{{ hostname }}.{{ domain }}
-    {% endif %}
-
 {% else %}
+    Redirect permanent / https://{{ item.servername }}-{{ hostname }}.{{ domain }}
+{% endif %}
+{% else %}
+{% if item.type == "proxy" %}
+    RewriteEngine on
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond %{HTTP:Connection} upgrade [NC]
+    RewriteRule ^/?(.*) "ws://{{ item.ip }}:{{ item.port }}/$1" [P,L]
 
-    {% if item.type == "proxy" %}
     ProxyPass / http://{{ item.ip }}:{{ item.port }}/
     ProxyPassReverse / http://{{ item.ip }}:{{ item.port }}/
-    ServerName localhost
-    {% else %}
-
+    ProxyRequests off
+{% else %}
     DocumentRoot {{ apache_document_root }}{{ item.servername }}
 
     <Directory {{ apache_document_root }}{{ item.servername }}>
@@ -34,8 +33,7 @@
         Order allow,deny
         allow from all
     </Directory>
-    {% endif %}
-
+{% endif %}
 {% endif %}
 
     ErrorLog /var/log/apache2/error_{{ item.servername }}.log

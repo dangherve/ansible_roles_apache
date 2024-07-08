@@ -3,16 +3,27 @@
     ServerName  {{ item.servername }}
 
 {% if item.main is defined %}
-       ServerAlias {{ domain }} {{ hostname }}.{{ domain }}
+    ServerAlias {{ domain }} {{ hostname }}.{{ domain }}
 {% else %}
-       ServerAlias {{ item.servername }}.{{ domain }} {{ item.servername }}-{{ hostname }}.{{ domain }}
+    ServerAlias {{ item.servername }}.{{ domain }} {{ item.servername }}-{{ hostname }}.{{ domain }}
 {% endif %}
 
 
-    {% if item.type == "proxy" %}
+{% if item.type == "proxy" %}
+    RewriteEngine on
+    RewriteCond %{HTTPS:Upgrade} websocket [NC]
+    RewriteCond %{HTTPS:Connection} upgrade [NC]
+    RewriteRule ^/?(.*) "ws://{{ item.ip }}:{{ item.port }}/$1" [P,L]
+
+    SSLProxyEngine on
+    SSLProxyCheckPeerCN off
+    SSLProxyCheckPeerName off
+
     ProxyPass / https://{{ item.ip }}:{{ item.port }}/
     ProxyPassReverse / https://{{ item.ip }}:{{ item.port }}/
-    {% else %}
+    ProxyRequests off
+
+{% else %}
     DocumentRoot {{ apache_document_root }}{{ item.servername }}
 
     <Directory {{ apache_document_root }}{{ item.servername }}>
@@ -21,7 +32,7 @@
         Order allow,deny
         allow from all
     </Directory>
-    {% endif %}
+{% endif %}
     ErrorLog /var/log/apache2/error_ssl_{{ item.servername }}.log
 
     # Possible values include: debug, info, notice, warn, error, crit,

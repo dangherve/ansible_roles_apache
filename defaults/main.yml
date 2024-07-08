@@ -66,6 +66,7 @@ apache_mods_enabled:
     - proxy_balancer
     - proxy_connect
     - proxy_html
+    - proxy_wstunnel
 
 apache_mods_disabled: []
 
