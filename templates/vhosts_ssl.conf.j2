@@ -47,8 +47,8 @@
     SSLCertificateFile    /etc/letsencrypt/live/{{ hostname }}.{{ domain }}/fullchain.pem
     SSLCertificateKeyFile /etc/letsencrypt/live/{{ hostname }}.{{ domain }}/privkey.pem
 {% else %}
-    SSLCertificateFile    /etc/letsencrypt/live/{{ item.servername }}-{{ hostname }}.{{ domain }}/fullchain.pem
-    SSLCertificateKeyFile /etc/letsencrypt/live/{{ item.servername }}-{{ hostname }}.{{ domain }}/privkey.pem
+    SSLCertificateFile    /etc/letsencrypt/live/{{ item.servername }}.{{ domain }}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{ item.servername }}.{{ domain }}/privkey.pem
 {% endif %}
 
 

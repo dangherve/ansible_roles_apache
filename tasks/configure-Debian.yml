@@ -103,16 +103,7 @@
     - restart apache
 
 
-- name: Enable Apache site 1.
-  file:
-    src: "{{ apache_server_root }}/sites-available/{{ item.servername }}.conf"
-    dest: "{{ apache_server_root }}/sites-enabled/{{ item.servername }}.conf"
-    state: link
-  with_items: "{{ apache_vhosts }}"
-  when: sym.stat.exists is true
-  notify: restart apache
-
-- name: Enable Apache site2 .
+- name: Enable Apache site
   file:
     src: "{{ apache_server_root }}/sites-available/{{ item.servername }}.conf"
     dest: "{{ apache_server_root }}/sites-enabled/{{ item.servername }}.conf"
@@ -121,16 +112,7 @@
   notify: restart apache
 
 
-- name: Enable Apache ssl site 1.
-  file:
-    src: "{{ apache_server_root }}/sites-available/{{ item.servername }}_ssl.conf"
-    dest: "{{ apache_server_root }}/sites-enabled/{{ item.servername }}_ssl.conf"
-    state: link
-  with_items: "{{ apache_vhosts }}"
-  when: sym.stat.exists is true
-  notify: restart apache
-
-- name: Enable Apache ssl site2 .
+- name: Enable Apache ssl site
   file:
     src: "{{ apache_server_root }}/sites-available/{{ item.servername }}_ssl.conf"
     dest: "{{ apache_server_root }}/sites-enabled/{{ item.servername }}_ssl.conf"

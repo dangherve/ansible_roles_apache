@@ -33,6 +33,8 @@ apache_vhosts_ssl: []
 
 #apache_ignore_missing_ssl_certificate: true
 
+
+letsencrypt_email: EMAIL
 email: EMAIL
 
 apache_vhosts_path: '{{ playbook_dir }}/templates/apache/'
