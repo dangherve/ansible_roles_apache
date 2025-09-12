@@ -5,23 +5,29 @@
 {% if item.main is defined %}
     ServerAlias {{ domain }} {{ hostname }}.{{ domain }}
 {% else %}
-    ServerAlias {{ item.servername }}.{{ domain }} {{ item.servername }}-{{ hostname }}.{{ domain }}
+    ServerAlias {{ item.servername }}-{{ hostname }}.{{ domain }} {{ item.servername }}.{{ domain }}
 {% endif %}
 
 
 {% if item.type == "proxy" %}
     RewriteEngine on
-    RewriteCond %{HTTPS:Upgrade} websocket [NC]
-    RewriteCond %{HTTPS:Connection} upgrade [NC]
-    RewriteRule ^/?(.*) "ws://{{ item.ip }}:{{ item.port }}/$1" [P,L]
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond %{HTTP:Connection} upgrade [NC]
+
+    RewriteRule ^/?(.*) "wss://{{ item.ip }}:{{ item.port }}/$1" [P,L]
 
     SSLProxyEngine on
     SSLProxyCheckPeerCN off
     SSLProxyCheckPeerName off
+    SSLProxyCheckPeerExpire Off
+
+    ProxyPass /api/v1/ws ws://{{ item.ip }}:{{ item.port }}/api/v1/ws
+    ProxyPassReverse /api/v1/ws ws://{{ item.ip }}:{{ item.port }}/api/v1/ws
 
     ProxyPass / https://{{ item.ip }}:{{ item.port }}/
     ProxyPassReverse / https://{{ item.ip }}:{{ item.port }}/
     ProxyRequests off
+    ProxyPreserveHost Off
 
 {% else %}
     DocumentRoot {{ apache_document_root }}{{ item.servername }}
@@ -47,8 +53,8 @@
     SSLCertificateFile    /etc/letsencrypt/live/{{ hostname }}.{{ domain }}/fullchain.pem
     SSLCertificateKeyFile /etc/letsencrypt/live/{{ hostname }}.{{ domain }}/privkey.pem
 {% else %}
-    SSLCertificateFile    /etc/letsencrypt/live/{{ item.servername }}.{{ domain }}/fullchain.pem
-    SSLCertificateKeyFile /etc/letsencrypt/live/{{ item.servername }}.{{ domain }}/privkey.pem
+    SSLCertificateFile    /etc/letsencrypt/live/{{ item.servername }}-{{ hostname }}.{{ domain }}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{ item.servername }}-{{ hostname }}.{{ domain }}/privkey.pem
 {% endif %}
 
 

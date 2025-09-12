@@ -5,15 +5,16 @@
 {% if item.main is defined %}
     ServerAlias {{ domain }} {{ hostname }}.{{ domain }}
 {% else %}
-    ServerAlias {{ item.servername }}.{{ domain }} {{ item.servername }}-{{ hostname }}.{{ domain }}
+    ServerAlias {{ item.servername }}-{{ hostname }}.{{ domain }} {{ item.servername }}.{{ domain }}
 {% endif %}
-{% if item.secure_only is defined and item.secure_only == "true" %}
+{% if item.secure_only is defined and item.secure_only == true %}
     #443 only
 {% if item.main is defined %}
     Redirect permanent / https://{{ hostname }}.{{ domain }}
 {% else %}
     Redirect permanent / https://{{ item.servername }}-{{ hostname }}.{{ domain }}
 {% endif %}
+
 {% else %}
 {% if item.type == "proxy" %}
     RewriteEngine on
