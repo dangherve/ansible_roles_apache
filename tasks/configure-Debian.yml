@@ -31,6 +31,12 @@
   with_items: "{{ apache_mods_disabled }}"
   notify: restart apache
 
+#file with regexp pattern not working
+- name: remove all site
+  shell:
+   cmd: "rm {{ apache_server_root }}/sites-enabled/*.conf"
+  ignore_errors: yes
+  when: apache_reset is defined
 # install site from git
 - include_tasks: install.yml
   when: site.type == "git"
