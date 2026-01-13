@@ -37,6 +37,15 @@
    cmd: "rm {{ apache_server_root }}/sites-enabled/*.conf"
   ignore_errors: yes
   when: apache_reset is defined
+
+- include_tasks: dns.yml
+  args:
+      apply:
+          delegate_to: "{{ host }}"
+  with_items: "{{ DnsHost }}"
+  loop_control:
+    loop_var: host
+
 # install site from git
 - include_tasks: install.yml
   when: site.type == "git"

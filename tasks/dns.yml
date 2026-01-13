@@ -1,0 +1,25 @@
+- debug:
+    msg: "****************************DNS *****************************************"
+
+
+- name: configure main  site dns
+  shell: "
+    echo \"server 127.0.0.1\" > /tmp/update.txt; \
+    echo \"zone {{ item.zone }}\" >> /tmp/update.txt; \
+    echo \"update add {{ item.servername }}.{{ item.zone }}                3600 CNAME {{ hostname }}.{{ item.zone }}\" >> /tmp/update.txt; \
+    echo \"update add {{ item.servername }}-{{ hostname }}.{{ item.zone }} 3600 CNAME {{ hostname }}.{{ item.zone }}\" >> /tmp/update.txt; \
+    echo \"send\" >> /tmp/update.txt; \
+    nsupdate -k /etc/bind/rndc.key -v /tmp/update.txt"
+  when: item.webroot is not defined and hostname == item.mainWebServer
+  with_items: "{{ apache_vhosts }}"
+
+- name: configure site dns
+  shell: "
+    echo \"server 127.0.0.1\" > /tmp/update.txt; \
+    echo \"zone {{ item.zone }}\" >> /tmp/update.txt; \
+    echo \"update add {{ item.servername }}-{{ hostname }}.{{ item.zone }} 3600 CNAME {{ hostname }}.{{ item.zone }}\" >> /tmp/update.txt; \
+    echo \"send\" >> /tmp/update.txt; \
+    nsupdate -k /etc/bind/rndc.key -v /tmp/update.txt"
+  when: item.webroot is not defined and hostname != item.mainWebServer
+  with_items: "{{ apache_vhosts }}"
+
