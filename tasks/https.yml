@@ -1,38 +1,109 @@
 - debug:
     msg: "******************** install {{ site.servername }}-{{ hostname }}.{{ domain }} ********************"
 
-- name: certificat  main
-  shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} --email {{ letsencrypt_email }}  --domain {{ hostname }}.{{ domain }} --expand"
-  ignore_errors: yes
+
+
+- name: master domain enable
+  set_fact:
+    masterDomain: "--domain {{ site.servername }}.{{ domain }}"
+  when: hostname == site.mainWebServer
+
+- name: master domain
+  set_fact:
+    masterDomain: ""
+  when: hostname != site.mainWebServer
+
+- debug:
+    msg: "{{ masterDomain }}"
+
+
+- name: certificat  with main domain
+  shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} --email {{ letsencrypt_email }} \
+  --cert-name {{ hostname }}.{{ domain }}  --domain {{ domain }} \
+  --domain {{ hostname }}.{{ domain }} --expand"
+#  ignore_errors: yes
   args:
     creates: "/etc/letsencrypt/live/{{ hostname }}.{{ domain }}"
-  when: site.main is defined
-#  ignore_errors: yes
-  register: result
+  when: site.main is defined and   hostname == site.mainWebServer
+  register: result1
   notify:
     - restart apache
-#--domain {{ site.servername }}.{{ domain }}
+
+- name: result to keep
+  set_fact:
+    result: "{{ result1 }}"
+  when: site.main is defined and   hostname == site.mainWebServer
+
+- name: certificat without main domain
+  shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} --email {{ letsencrypt_email }} \
+  --cert-name {{ hostname }}.{{ domain }}  --domain  {{ hostname }}.{{ domain }} --expand"
+#  ignore_errors: yes
+  args:
+    creates: "/etc/letsencrypt/live/{{ hostname }}.{{ domain }}"
+  when: site.main is defined and hostname != site.mainWebServer
+  register: result2
+  notify:
+    - restart apache
+
+- name: result to keep
+  set_fact:
+    result: "{{ result2 }}"
+  when: site.main is defined and hostname != site.mainWebServer
+
 - name: certificat
-  shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} --email {{ letsencrypt_email }} --domain {{ site.servername }}-{{ hostname }}.{{ domain }}
-     --expand"
-  ignore_errors: yes
+  shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} --email {{ letsencrypt_email }} \
+  --cert-name {{ site.servername }}-{{ hostname }}.{{ domain }}  {{ masterDomain }} \
+  --domain {{ site.servername }}-{{ hostname }}.{{ domain }}
+       --expand"
+#  ignore_errors: yes
   args:
     creates: "/etc/letsencrypt/live/{{ site.servername }}.{{ domain }}"
   when: site.main is not defined
-#  ignore_errors: yes
-  register: result
+  register: result3
   notify:
     - restart apache
+
+- name: result to keep
+  set_fact:
+    result: "{{ result3 }}"
+  when: site.main is not defined
 
 - debug:
     msg: "{{result}}"
 
-
-
 - name: construct ssl
   set_fact:
     apache_vhosts_ssl: "{{ apache_vhosts_ssl + [site] }}"
-  when: result.changed is true and result.failed is false
+  when:  result.changed is false or (result.changed is true and result.failed is false)
+
+- debug:
+    msg: "{{ apache_site_available_location }}/{{ site.servername }}_ssl.conf"
+
+#copy conf to site
+- name: Copy site from template ssl
+  template:
+    src=vhosts_ssl.conf.j2
+    dest={{ apache_site_available_location }}/{{ site.servername }}_ssl.conf
+    backup=no
+    mode=0644
+  when: result.changed is false or (result.changed is true and result.failed is false)
+  notify:
+    - restart apache
+
+- name: remove SSL HAS cert failed
+  file:
+    path: "{{ apache_site_available_location }}/{{ site.servername }}_ssl.conf"
+    state: absent
+  when: result.changed is true and result.failed is true
+
+
+- name: Enable Apache ssl site
+  file:
+    src: "{{ apache_server_root }}/sites-available/{{ site.servername }}_ssl.conf"
+    dest: "{{ apache_server_root }}/sites-enabled/{{ site.servername }}_ssl.conf"
+    state: link
+  when: result.changed is false or (result.changed is true and result.failed is false)
+  notify: restart apache
 
 
 

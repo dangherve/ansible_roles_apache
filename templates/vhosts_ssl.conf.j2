@@ -1,60 +1,65 @@
 <VirtualHost *:443>
     ServerAdmin {{ email }}
-    ServerName  {{ item.servername }}
+    ServerName  {{ site.servername }}
 
-{% if item.main is defined %}
+{% if site.main is defined %}
     ServerAlias {{ domain }} {{ hostname }}.{{ domain }}
 {% else %}
-    ServerAlias {{ item.servername }}-{{ hostname }}.{{ domain }} {{ item.servername }}.{{ domain }}
+    ServerAlias {{ site.servername }}-{{ hostname }}.{{ domain }} {{ site.servername }}.{{ domain }}
 {% endif %}
 
 
-{% if item.type == "proxy" %}
+{% if site.type == "proxy" %}
     RewriteEngine on
     RewriteCond %{HTTP:Upgrade} websocket [NC]
     RewriteCond %{HTTP:Connection} upgrade [NC]
 
-    RewriteRule ^/?(.*) "wss://{{ item.ip }}:{{ item.port }}/$1" [P,L]
+    RewriteRule ^/?(.*) "wss://{{ site.ip }}:{{ site.port }}/$1" [P,L]
 
     SSLProxyEngine on
     SSLProxyCheckPeerCN off
     SSLProxyCheckPeerName off
     SSLProxyCheckPeerExpire Off
 
-    ProxyPass /api/v1/ws ws://{{ item.ip }}:{{ item.port }}/api/v1/ws
-    ProxyPassReverse /api/v1/ws ws://{{ item.ip }}:{{ item.port }}/api/v1/ws
+    ProxyPass /api/v1/ws ws://{{ site.ip }}:{{ site.port }}/api/v1/ws
+    ProxyPassReverse /api/v1/ws ws://{{ site.ip }}:{{ site.port }}/api/v1/ws
 
-    ProxyPass / https://{{ item.ip }}:{{ item.port }}/
-    ProxyPassReverse / https://{{ item.ip }}:{{ item.port }}/
+{% if site.httpsNotSupported is defined %}
+    ProxyPass / http://{{ site.ip }}:{{ site.port }}/
+    ProxyPassReverse / http://{{ site.ip }}:{{ site.port }}/
+{% else %}
+    ProxyPass / https://{{ site.ip }}:{{ site.port }}/
+    ProxyPassReverse / https://{{ site.ip }}:{{ site.port }}/
+{% endif %}
     ProxyRequests off
     ProxyPreserveHost Off
 
 {% else %}
-    DocumentRoot {{ apache_document_root }}{{ item.servername }}
+    DocumentRoot {{ apache_document_root }}{{ site.servername }}
 
-    <Directory {{ apache_document_root }}{{ item.servername }}>
-        Options {{ item.indexes | default('Indexes')}} FollowSymLinks MultiViews
+    <Directory {{ apache_document_root }}{{ site.servername }}>
+        Options {{ site.indexes | default('Indexes')}} FollowSymLinks MultiViews
         AllowOverride None
         Order allow,deny
         allow from all
     </Directory>
 {% endif %}
-    ErrorLog /var/log/apache2/error_ssl_{{ item.servername }}.log
+    ErrorLog /var/log/apache2/error_ssl_{{ site.servername }}.log
 
     # Possible values include: debug, info, notice, warn, error, crit,
     # alert, emerg.
     LogLevel warn
 
-    CustomLog /var/log/apache2/access_ssl_{{ item.servername }}.log combined
+    CustomLog /var/log/apache2/access_ssl_{{ site.servername }}.log combined
 
     SSLEngine on
 
-{% if item.main is defined %}
+{% if site.main is defined %}
     SSLCertificateFile    /etc/letsencrypt/live/{{ hostname }}.{{ domain }}/fullchain.pem
     SSLCertificateKeyFile /etc/letsencrypt/live/{{ hostname }}.{{ domain }}/privkey.pem
 {% else %}
-    SSLCertificateFile    /etc/letsencrypt/live/{{ item.servername }}-{{ hostname }}.{{ domain }}/fullchain.pem
-    SSLCertificateKeyFile /etc/letsencrypt/live/{{ item.servername }}-{{ hostname }}.{{ domain }}/privkey.pem
+    SSLCertificateFile    /etc/letsencrypt/live/{{ site.servername }}-{{ hostname }}.{{ domain }}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{ site.servername }}-{{ hostname }}.{{ domain }}/privkey.pem
 {% endif %}
 
 
