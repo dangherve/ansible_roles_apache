@@ -15,4 +15,8 @@
 #  ignore_errors: yes
   when: sym.stat.islnk is defined and sym.stat.islnk == False
 
+- name: check permissions
+  file:
+    path: "{{ site.directory }}"
+    mode: 0775
 
