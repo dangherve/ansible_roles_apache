@@ -16,8 +16,7 @@
 - debug:
     msg: "{{ masterDomain }}"
 
-
-- name: certificat  with main domain
+- name: certificat with main domain
   shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} --email {{ letsencrypt_email }} \
   --cert-name {{ hostname }}.{{ domain }}  --domain {{ domain }} \
   --domain {{ hostname }}.{{ domain }} --expand"
