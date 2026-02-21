@@ -38,61 +38,6 @@
   ignore_errors: yes
   when: apache_reset is defined
 
-- include_tasks: dns.yml
-  args:
-      apply:
-          delegate_to: "{{ host }}"
-  with_items: "{{ DnsHost }}"
-  loop_control:
-    loop_var: host
-
-# install site from git
-- include_tasks: install.yml
-  when: site.type == "git"
-  with_items: "{{ apache_vhosts }}"
-  loop_control:
-    loop_var: site
-
-
-# install site from other link ( ie site/mobile_site)
-- include_tasks: link.yml
-  when: site.type == "link"
-  with_items: "{{ apache_vhosts }}"
-  loop_control:
-    loop_var: site
-
-# directory ie site/mobile_site)
-- include_tasks: directory.yml
-  when: site.type == "directory"
-  with_items: "{{ apache_vhosts }}"
-  loop_control:
-    loop_var: site
-
-
-#copy conf to site
-- name: Copy site from template
-  template:
-    src: vhosts.conf.j2
-    dest: "{{ apache_site_available_location }}/{{ item.servername }}.conf"
-    backup: no
-    mode: 0644
-  with_items: "{{ apache_vhosts }}"
-  notify:
-    - restart apache
-
-
-- name: Enable Apache site
-  file:
-    src: "{{ apache_server_root }}/sites-available/{{ item.servername }}.conf"
-    dest: "{{ apache_server_root }}/sites-enabled/{{ item.servername }}.conf"
-    state: link
-  with_items: "{{ apache_vhosts }}"
-  notify: restart apache
-
-
-
-
-
 #NEED DETECT apache running standalone
 - name: Check apache2
   shell: systemctl status apache2.service | grep Active | awk -v N=2 '{print $N}'
@@ -108,11 +53,11 @@
     certbot_type:  "standalone"
   when:  output.stdout != 'active'
 
-- include_tasks: https.yml
+- include_tasks: site.yml
+  when: site.noReplication is not defined or hostname == site.mainWebServer
   with_items: "{{ apache_vhosts }}"
   loop_control:
     loop_var: site
-
 
 - name: renew certicat
   shell: "certbot renew --apache"

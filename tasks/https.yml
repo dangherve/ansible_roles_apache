@@ -1,8 +1,3 @@
-- debug:
-    msg: "******************** install {{ site.servername }}-{{ hostname }}.{{ domain }} ********************"
-
-
-
 - name: master domain enable
   set_fact:
     masterDomain: "--domain {{ site.servername }}.{{ domain }}"
@@ -12,9 +7,6 @@
   set_fact:
     masterDomain: ""
   when: hostname != site.mainWebServer
-
-- debug:
-    msg: "{{ masterDomain }}"
 
 - name: certificat with main domain
   shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} --email {{ letsencrypt_email }} \
@@ -54,7 +46,7 @@
   --cert-name {{ site.servername }}-{{ hostname }}.{{ domain }}  {{ masterDomain }} \
   --domain {{ site.servername }}-{{ hostname }}.{{ domain }}
        --expand"
-#  ignore_errors: yes
+  ignore_errors: yes
   args:
     creates: "/etc/letsencrypt/live/{{ site.servername }}.{{ domain }}"
   when: site.main is not defined
@@ -67,16 +59,10 @@
     result: "{{ result3 }}"
   when: site.main is not defined
 
-- debug:
-    msg: "{{result}}"
-
 - name: construct ssl
   set_fact:
     apache_vhosts_ssl: "{{ apache_vhosts_ssl + [site] }}"
   when:  result.changed is false or (result.changed is true and result.failed is false)
-
-- debug:
-    msg: "{{ apache_site_available_location }}/{{ site.servername }}_ssl.conf"
 
 #copy conf to site
 - name: Copy site from template ssl
@@ -95,7 +81,6 @@
     state: absent
   when: result.changed is true and result.failed is true
 
-
 - name: Enable Apache ssl site
   file:
     src: "{{ apache_server_root }}/sites-available/{{ site.servername }}_ssl.conf"
@@ -103,6 +88,3 @@
     state: link
   when: result.changed is false or (result.changed is true and result.failed is false)
   notify: restart apache
-
-
-

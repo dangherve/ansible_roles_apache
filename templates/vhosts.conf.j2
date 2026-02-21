@@ -1,34 +1,38 @@
 <VirtualHost *:80>
     ServerAdmin {{ email }}
-    ServerName  {{ item.servername }}
+    ServerName  {{ site.servername }}
 
-{% if item.main is defined %}
+{% if site.noReplication is defined %}
+    ServerAlias {{ site.servername }}.{{ domain }}
+{% elif site.main is defined %}
     ServerAlias {{ domain }} {{ hostname }}.{{ domain }}
 {% else %}
-    ServerAlias {{ item.servername }}-{{ hostname }}.{{ domain }} {{ item.servername }}.{{ domain }}
+    ServerAlias {{ site.servername }}-{{ hostname }}.{{ domain }} {{ site.servername }}.{{ domain }}
 {% endif %}
-{% if item.secure_only is defined and item.secure_only == true %}
+{% if site.secure_only is defined and site.secure_only == true %}
     #443 only
-{% if item.main is defined %}
+{% if site.noReplication is defined %}
+     Redirect permanent / https://{{ site.servername }}.{{ domain }}
+{% elif site.main is defined %}
     Redirect permanent / https://{{ hostname }}.{{ domain }}
 {% else %}
-    Redirect permanent / https://{{ item.servername }}-{{ hostname }}.{{ domain }}
+    Redirect permanent / https://{{ site.servername }}-{{ hostname }}.{{ domain }}
 {% endif %}
 
 {% else %}
-{% if item.type == "proxy" %}
+{% if site.type == "proxy" or site.type == "dockerGit" %}
     RewriteEngine on
     RewriteCond %{HTTP:Upgrade} websocket [NC]
     RewriteCond %{HTTP:Connection} upgrade [NC]
-    RewriteRule ^/?(.*) "ws://{{ item.ip }}:{{ item.port }}/$1" [P,L]
+    RewriteRule ^/?(.*) "ws://{{ site.ip }}:{{ site.port }}/$1" [P,L]
 
-    ProxyPass / http://{{ item.ip }}:{{ item.port }}/
-    ProxyPassReverse / http://{{ item.ip }}:{{ item.port }}/
+    ProxyPass / http://{{ site.ip }}:{{ site.port }}/
+    ProxyPassReverse / http://{{ site.ip }}:{{ site.port }}/
     ProxyRequests off
 {% else %}
-    DocumentRoot {{ apache_document_root }}{{ item.servername }}
+    DocumentRoot {{ apache_document_root }}{{ site.servername }}
 
-    <Directory {{ apache_document_root }}{{ item.servername }}>
+    <Directory {{ apache_document_root }}{{ site.servername }}>
         Options Indexes FollowSymLinks MultiViews
         AllowOverride None
         Order allow,deny
@@ -37,13 +41,13 @@
 {% endif %}
 {% endif %}
 
-    ErrorLog /var/log/apache2/error_{{ item.servername }}.log
+    ErrorLog /var/log/apache2/error_{{ site.servername }}.log
 
     # Possible values include: debug, info, notice, warn, error, crit,
     # alert, emerg.
     LogLevel warn
 
-    CustomLog /var/log/apache2/access_{{ item.servername }}.log combined
+    CustomLog /var/log/apache2/access_{{ site.servername }}.log combined
 
 </VirtualHost>
 

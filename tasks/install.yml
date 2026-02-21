@@ -1,6 +1,3 @@
-- debug:
-    msg: "******************** install {{ site.project_repository }} ********************"
-
 - name: Clone / update  repository
   git:
     repo: "{{ site.project_repository }}"
@@ -11,3 +8,14 @@
 - name: specific task if define
   include_tasks: "{{ site.specific }}.yml"
   when: site.specific is defined
+
+- name: replace database info
+  shell: "ls ; \
+    sed -ie \"s/%%LOGIN%%/{{ site.dbLogin }}/g\" {{ item }}; \
+    sed -ie \"s/%%PASS%%/{{ site.dbPass }}/g\" {{ item }}; \
+    sed -ie \"s/%%HOTE%%/{{ site.host }}/g\" {{ item }}; \
+    sed -ie \"s/%%DATABASE%%/{{ site.db }}/g\" {{ item }}"
+  args:
+    chdir: "{{ apache_dest_dir }}/{{ site.servername }}"
+  with_items:  "{{ site.files }}"
+  when: site.files is defined

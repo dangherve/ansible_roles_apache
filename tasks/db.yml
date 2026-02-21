@@ -1,0 +1,26 @@
+- name: add user
+  mysql_user:
+    name: "{{ site.dbLogin }}"
+    password: "{{ site.dbPass }}"
+    priv: '{{ site.db }}.*: ALL'
+    login_host: "{{ site.loginHost |default(localhost)}}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    state: present
+
+- name: Create a new database
+  mysql_db:
+    name: "{{ site.db }}"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  register: db_create
+
+- name: import sql
+  mysql_db:
+    name: "{{ site.db }}"
+    state: import
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    target: "{{ site.directory |  default([apache_dest_dir,site.servername ] | path_join)  }}/{{ site.sql }}"
+  when: db_create.changed and site.sql is defined

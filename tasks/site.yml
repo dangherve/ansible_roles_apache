@@ -1,0 +1,52 @@
+- debug:
+    msg: "******************** {{ site.servername }} ********************"
+
+- name: update dns tasks
+  include_tasks: dns.yml
+  args:
+      apply:
+          delegate_to: "{{ host }}"
+  with_items: "{{ DnsHost }}"
+  loop_control:
+    loop_var: host
+
+- name: install site from git
+  include_tasks: install.yml
+  when: site.type == "git" or site.type == "dockerGit"
+
+- name: install site from link
+  include_tasks: link.yml
+  when: site.type == "link"
+
+- name: install directory
+  include_tasks: directory.yml
+  when: site.type == "directory"
+
+- name: docker setup
+  include_tasks: docker.yml
+  when: site.type == "dockerGit"
+
+- name: install db
+  include_tasks: db.yml
+  when: site.db is defined and hostname == site.mainWebServer
+
+#copy conf to site
+- name: Copy site from template
+  template:
+    src: vhosts.conf.j2
+    dest: "{{ apache_site_available_location }}/{{ site.servername }}.conf"
+    backup: no
+    mode: 0644
+  notify:
+    - restart apache
+
+- name: Enable Apache site
+  file:
+    src: "{{ apache_server_root }}/sites-available/{{ site.servername }}.conf"
+    dest: "{{ apache_server_root }}/sites-enabled/{{ site.servername }}.conf"
+    state: link
+  notify: restart apache
+
+- name: https tasks
+  include_tasks: https.yml
+

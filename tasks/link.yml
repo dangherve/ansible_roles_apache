@@ -1,11 +1,11 @@
-#5
-
 - stat:
     path: "{{ site.directory }}"
   register: sym
 
-- debug:
-    msg: "{{ sym }}"
+- name: directory is created
+  file:
+    path: "{{ site.directory }}"
+    state: directory
 
 - name: Create a symbolic link
   file:
@@ -19,4 +19,3 @@
   file:
     path: "{{ site.directory }}"
     mode: 0775
-

@@ -2,14 +2,16 @@
     ServerAdmin {{ email }}
     ServerName  {{ site.servername }}
 
-{% if site.main is defined %}
+{% if site.noReplication is defined %}
+    ServerAlias {{ site.servername }}.{{ domain }}
+{% elif site.main is defined %}
     ServerAlias {{ domain }} {{ hostname }}.{{ domain }}
 {% else %}
     ServerAlias {{ site.servername }}-{{ hostname }}.{{ domain }} {{ site.servername }}.{{ domain }}
 {% endif %}
 
 
-{% if site.type == "proxy" %}
+{% if site.type == "proxy" or site.type == "dockerGit" %}
     RewriteEngine on
     RewriteCond %{HTTP:Upgrade} websocket [NC]
     RewriteCond %{HTTP:Connection} upgrade [NC]

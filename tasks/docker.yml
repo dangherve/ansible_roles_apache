@@ -1,0 +1,7 @@
+- name: Create and start services
+  community.docker.docker_compose_v2:
+        project_src: "{{ apache_dest_dir }}/{{ site.servername }}"
+        pull: always
+
+
+
