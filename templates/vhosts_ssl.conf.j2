@@ -1,13 +1,13 @@
 <VirtualHost *:443>
     ServerAdmin {{ email }}
-    ServerName  {{ site.servername }}
+    ServerName  {{ site.servername }}{{site.subZone |default('')}}
 
 {% if site.noReplication is defined %}
-    ServerAlias {{ site.servername }}.{{ domain }}
+    ServerAlias {{ site.servername }}{{site.subZone |default('')}}.{{ domain }}
 {% elif site.main is defined %}
-    ServerAlias {{ domain }} {{ hostname }}.{{ domain }}
+    ServerAlias {{ domain }} {{ hostname }}{{site.subZone |default('')}}.{{ domain }}
 {% else %}
-    ServerAlias {{ site.servername }}-{{ hostname }}.{{ domain }} {{ site.servername }}.{{ domain }}
+    ServerAlias {{ site.servername }}-{{ hostname }}{{site.subZone |default('')}}.{{ domain }} {{ site.servername }}{{site.subZone |default('')}}.{{ domain }}
 {% endif %}
 
 
@@ -59,9 +59,12 @@
 {% if site.main is defined %}
     SSLCertificateFile    /etc/letsencrypt/live/{{ hostname }}.{{ domain }}/fullchain.pem
     SSLCertificateKeyFile /etc/letsencrypt/live/{{ hostname }}.{{ domain }}/privkey.pem
+{% elif site.noReplication is defined %}
+    SSLCertificateFile    /etc/letsencrypt/live/{{ site.servername }}{{site.subZone |default('')}}.{{ domain }}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{ site.servername }}{{site.subZone |default('')}}.{{ domain }}/privkey.pem
 {% else %}
-    SSLCertificateFile    /etc/letsencrypt/live/{{ site.servername }}-{{ hostname }}.{{ domain }}/fullchain.pem
-    SSLCertificateKeyFile /etc/letsencrypt/live/{{ site.servername }}-{{ hostname }}.{{ domain }}/privkey.pem
+    SSLCertificateFile    /etc/letsencrypt/live/{{ site.servername }}-{{ hostname }}{{site.subZone |default('')}}.{{ domain }}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{ site.servername }}-{{ hostname }}{{site.subZone |default('')}}.{{ domain }}/privkey.pem
 {% endif %}
 
 

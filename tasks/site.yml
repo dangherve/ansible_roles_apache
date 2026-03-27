@@ -1,12 +1,14 @@
 - debug:
-    msg: "******************** {{ site.servername }} ********************"
+    msg: "******************** {{ site.servername }} {{site.subZone |default('')}} ********************"
 
+#no need to call for main dns
 - name: update dns tasks
   include_tasks: dns.yml
   args:
       apply:
           delegate_to: "{{ host }}"
   with_items: "{{ DnsHost }}"
+  when: site.webroot is not defined
   loop_control:
     loop_var: host
 
@@ -34,7 +36,7 @@
 - name: Copy site from template
   template:
     src: vhosts.conf.j2
-    dest: "{{ apache_site_available_location }}/{{ site.servername }}.conf"
+    dest: "{{ apache_site_available_location }}/{{ site.servername }}{{site.subZone |default('')}}.conf"
     backup: no
     mode: 0644
   notify:
@@ -42,8 +44,8 @@
 
 - name: Enable Apache site
   file:
-    src: "{{ apache_server_root }}/sites-available/{{ site.servername }}.conf"
-    dest: "{{ apache_server_root }}/sites-enabled/{{ site.servername }}.conf"
+    src: "{{ apache_server_root }}/sites-available/{{ site.servername }}{{site.subZone |default('')}}.conf"
+    dest: "{{ apache_server_root }}/sites-enabled/{{ site.servername }}{{site.subZone |default('')}}.conf"
     state: link
   notify: restart apache
 

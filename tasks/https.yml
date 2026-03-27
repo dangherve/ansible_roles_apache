@@ -42,17 +42,30 @@
   when: site.main is defined and hostname != site.mainWebServer
 
 - name: certificat
-  shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} --email {{ letsencrypt_email }} \
-  --cert-name {{ site.servername }}-{{ hostname }}.{{ domain }}  {{ masterDomain }} \
-  --domain {{ site.servername }}-{{ hostname }}.{{ domain }}
+  shell: "certbot  --non-interactive --agree-tos --{{ certbot_type }} {{ option }} --email {{ letsencrypt_email }} \
+  --cert-name {{ site.servername }}-{{ hostname }}{{site.subZone |default('')}}.{{ domain }}  {{ masterDomain }} \
+  --domain {{ site.servername }}-{{ hostname }}{{site.subZone |default('')}}.{{ domain }}
        --expand"
-  ignore_errors: yes
+#  ignore_errors: yes
   args:
-    creates: "/etc/letsencrypt/live/{{ site.servername }}.{{ domain }}"
-  when: site.main is not defined
+    creates: "/etc/letsencrypt/live/{{ site.servername }}{{site.subZone |default('')}}.{{ domain }}"
+  when: site.main is not defined and site.noReplication is not defined
   register: result3
   notify:
     - restart apache
+
+- name: certificat noReplication
+  shell: "certbot  --non-interactive --agree-tos --{{ certbot_type }} {{ option }}  --email {{ letsencrypt_email }} \
+  --domain {{ site.servername }}{{site.subZone |default('')}}.{{ domain }}
+       --expand"
+#  ignore_errors: yes
+  args:
+    creates: "/etc/letsencrypt/live/{{ site.servername }}{{site.subZone |default('')}}.{{ domain }}"
+  when: site.main is not defined and site.noReplication is defined
+  register: result3
+  notify:
+    - restart apache
+
 
 - name: result to keep
   set_fact:
@@ -68,23 +81,38 @@
 - name: Copy site from template ssl
   template:
     src=vhosts_ssl.conf.j2
-    dest={{ apache_site_available_location }}/{{ site.servername }}_ssl.conf
+    dest={{ apache_site_available_location }}/{{ site.servername }}{{site.subZone |default('')}}_ssl.conf
     backup=no
     mode=0644
   when: result.changed is false or (result.changed is true and result.failed is false)
   notify:
     - restart apache
 
+
+
+#copy conf to site
+- name: remove letsencrypt conf if existed
+  file:
+    state: absent
+    dest: "{{item}}"
+  when: result.changed is false or (result.changed is true and result.failed is false)
+  with_items:
+    - "{{ apache_site_available_location }}/{{ site.servername }}{{site.subZone |default('')}}-le-ssl.conf"
+    - "{{ apache_site_enabled_location }}/{{ site.servername }}{{site.subZone |default('')}}-le-ssl.conf"
+  notify:
+    - restart apache
+
+
 - name: remove SSL HAS cert failed
   file:
-    path: "{{ apache_site_available_location }}/{{ site.servername }}_ssl.conf"
+    path: "{{ apache_site_available_location }}/{{ site.servername }}{{site.subZone |default('')}}_ssl.conf"
     state: absent
   when: result.changed is true and result.failed is true
 
 - name: Enable Apache ssl site
   file:
-    src: "{{ apache_server_root }}/sites-available/{{ site.servername }}_ssl.conf"
-    dest: "{{ apache_server_root }}/sites-enabled/{{ site.servername }}_ssl.conf"
+    src: "{{ apache_server_root }}/sites-available/{{ site.servername }}{{site.subZone |default('')}}_ssl.conf"
+    dest: "{{ apache_server_root }}/sites-enabled/{{ site.servername }}{{site.subZone |default('')}}_ssl.conf"
     state: link
   when: result.changed is false or (result.changed is true and result.failed is false)
   notify: restart apache

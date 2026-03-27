@@ -1,19 +1,30 @@
-- name: update main  site dns
+
+- name: update main site dns
   shell: "
     echo \"server 127.0.0.1\" > /tmp/update.txt; \
     echo \"zone {{ site.zone }}\" >> /tmp/update.txt; \
-    echo \"update add {{ site.servername }}.{{ site.zone }}                3600 CNAME {{ hostname }}.{{ site.zone }}\" >> /tmp/update.txt; \
-    echo \"update add {{ site.servername }}-{{ hostname }}.{{ site.zone }} 3600 CNAME {{ hostname }}.{{ site.zone }}\" >> /tmp/update.txt; \
+    echo \"update add {{ site.servername }}{{site.subZone |default('')}}.{{ site.zone }}                3600 CNAME {{ hostname }}.{{ site.zone }}\" >> /tmp/update.txt; \
+    echo \"update add {{ site.servername }}-{{ hostname }}{{site.subZone |default('')}}.{{ site.zone }} 3600 CNAME {{ hostname }}.{{ site.zone }}\" >> /tmp/update.txt; \
     echo \"send\" >> /tmp/update.txt; \
     nsupdate -k /etc/bind/rndc.key -v /tmp/update.txt"
-  when: site.webroot is not defined and hostname == site.mainWebServer
+  when: hostname == site.mainWebServer and (site.noReplication is not defined or site.noReplication == false)
 
 - name: update site dns
   shell: "
     echo \"server 127.0.0.1\" > /tmp/update.txt; \
     echo \"zone {{ site.zone }}\" >> /tmp/update.txt; \
-    echo \"update add {{ site.servername }}-{{ hostname }}.{{ site.zone }} 3600 CNAME {{ hostname }}.{{ site.zone }}\" >> /tmp/update.txt; \
+    echo \"update add {{ site.servername }}-{{ hostname }}{{site.subZone |default('')}}.{{ site.zone }} 3600 CNAME {{ hostname }}.{{ site.zone }}\" >> /tmp/update.txt; \
     echo \"send\" >> /tmp/update.txt; \
     nsupdate -k /etc/bind/rndc.key -v /tmp/update.txt"
-  when: site.webroot is not defined and hostname != site.mainWebServer
+  when: hostname != site.mainWebServer and (site.noReplication is not defined or site.noReplication == false)
+
+
+- name: update no replication
+  shell: "
+    echo \"server 127.0.0.1\" > /tmp/update.txt; \
+    echo \"zone {{ site.zone }}\" >> /tmp/update.txt; \
+    echo \"update add {{ site.servername }}{{site.subZone |default('')}}.{{ site.zone }}                3600 CNAME {{ hostname }}.{{ site.zone }}\" >> /tmp/update.txt; \
+    echo \"send\" >> /tmp/update.txt; \
+    nsupdate -k /etc/bind/rndc.key -v /tmp/update.txt"
+  when: hostname == site.mainWebServer and site.noReplication is defined and site.noReplication == true
 

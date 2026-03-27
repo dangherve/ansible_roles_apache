@@ -1,9 +1,9 @@
 <VirtualHost *:80>
     ServerAdmin {{ email }}
-    ServerName  {{ site.servername }}
+    ServerName  {{ site.servername }}{{site.subZone |default('')}}
 
 {% if site.noReplication is defined %}
-    ServerAlias {{ site.servername }}.{{ domain }}
+    ServerAlias {{ site.servername }}{{site.subZone |default('')}}.{{ domain }}
 {% elif site.main is defined %}
     ServerAlias {{ domain }} {{ hostname }}.{{ domain }}
 {% else %}
@@ -12,11 +12,11 @@
 {% if site.secure_only is defined and site.secure_only == true %}
     #443 only
 {% if site.noReplication is defined %}
-     Redirect permanent / https://{{ site.servername }}.{{ domain }}
+     Redirect permanent / https://{{ site.servername }}{{site.subZone |default('')}}.{{ domain }}
 {% elif site.main is defined %}
     Redirect permanent / https://{{ hostname }}.{{ domain }}
 {% else %}
-    Redirect permanent / https://{{ site.servername }}-{{ hostname }}.{{ domain }}
+    Redirect permanent / https://{{ site.servername }}-{{ hostname }}{{site.subZone |default('')}}.{{ domain }}
 {% endif %}
 
 {% else %}
