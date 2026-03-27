@@ -9,7 +9,7 @@
   when: hostname != site.mainWebServer
 
 - name: certificat with main domain
-  shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} --email {{ letsencrypt_email }} \
+  shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} {{ option }} --email {{ letsencrypt_email }} \
   --cert-name {{ hostname }}.{{ domain }}  --domain {{ domain }} \
   --domain {{ hostname }}.{{ domain }} --expand"
 #  ignore_errors: yes
@@ -26,7 +26,7 @@
   when: site.main is defined and   hostname == site.mainWebServer
 
 - name: certificat without main domain
-  shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} --email {{ letsencrypt_email }} \
+  shell: "certbot certonly --non-interactive --agree-tos --{{ certbot_type }} {{ option }} --email {{ letsencrypt_email }} \
   --cert-name {{ hostname }}.{{ domain }}  --domain  {{ hostname }}.{{ domain }} --expand"
 #  ignore_errors: yes
   args:

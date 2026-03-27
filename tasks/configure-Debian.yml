@@ -46,11 +46,13 @@
 - name: cerbot type apache
   set_fact:
     certbot_type:  "apache"
+    option: ""
   when:  output.stdout == 'active'
 
 - name: cerbot type standalone
   set_fact:
     certbot_type:  "standalone"
+    option: "certonly"
   when:  output.stdout != 'active'
 
 - include_tasks: site.yml

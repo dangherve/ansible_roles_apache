@@ -3,7 +3,7 @@
     name: "{{ site.dbLogin }}"
     password: "{{ site.dbPass }}"
     priv: '{{ site.db }}.*: ALL'
-    login_host: "{{ site.loginHost |default(localhost)}}"
+    host: "{{ site.loginHost |default('localhost')}}"
     login_user: root
     login_password: "{{ mysql_root_password }}"
     state: present
