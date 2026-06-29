@@ -10,6 +10,28 @@
     ServerAlias {{ site.servername }}-{{ hostname }}{{site.subZone |default('')}}.{{ domain }} {{ site.servername }}{{site.subZone |default('')}}.{{ domain }}
 {% endif %}
 
+{% if site.auth is defined %}
+    <Location />
+        AuthType {{ site.auth.type | default('Basic')}}
+        AuthName {{ site.auth.name | default('PASS')}}
+        AuthUserFile {{ apache_server_root }}/htpasswd/{{ site.servername }}
+        Require valid-user
+    </Location>
+{% endif %}
+
+{% if site.cors is defined %}
+    <IfModule mod_headers.c>
+        Header set Access-Control-Allow-Origin "{{ site.cors }}"
+        Header set Vary "Origin"
+    </IfModule>
+{% endif %}
+
+{% if site.proxy is defined %}
+{% for proxy in site.proxy %}
+    ProxyPass {{ proxy.name }} {{ proxy.protocol|default("http") }}://{{ proxy.ip }}:{{ proxy.port|default("80") }}/
+    ProxyPassReverse {{ proxy.name }} {{ proxy.protocol|default("http") }}://{{ proxy.ip }}:{{ proxy.port|default("80") }}/
+{% endfor %}
+{% endif %}
 
 {% if site.type == "proxy" or site.type == "dockerGit" %}
     RewriteEngine on
@@ -44,6 +66,7 @@
         AllowOverride None
         Order allow,deny
         allow from all
+
     </Directory>
 {% endif %}
     ErrorLog /var/log/apache2/error_ssl_{{ site.servername }}.log

@@ -18,6 +18,7 @@ apache_packages:
     - python3-certbot-apache
     - libxml2-dev
     - python3-certbot-dns-rfc2136
+    - python3-passlib
 
 
 #apache_ports_configuration_items:

@@ -49,6 +49,14 @@
     state: link
   notify: restart apache
 
+- name: Enable Apache site default
+  file:
+    src: "{{ apache_server_root }}/sites-available/{{ site.servername }}{{site.subZone |default('')}}.conf"
+    dest: "{{ apache_server_root }}/sites-enabled/000.conf"
+    state: link
+  when: site.default is defined
+  notify: restart apache
+
 - name: https tasks
   include_tasks: https.yml
 

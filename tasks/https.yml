@@ -77,6 +77,18 @@
     apache_vhosts_ssl: "{{ apache_vhosts_ssl + [site] }}"
   when:  result.changed is false or (result.changed is true and result.failed is false)
 
+- name: Manage ppermission
+  htpasswd:
+    path: "{{ apache_server_root }}/htpasswd/{{ site.servername }}"
+    name: "{{ item.login }}"
+    password: "{{ item.pass }}"
+    owner: www-data
+    group: www-data
+    mode: '0640'
+  with_items: "{{site.auth}}"
+  when: site.auth is defined
+
+
 #copy conf to site
 - name: Copy site from template ssl
   template:
@@ -116,3 +128,4 @@
     state: link
   when: result.changed is false or (result.changed is true and result.failed is false)
   notify: restart apache
+

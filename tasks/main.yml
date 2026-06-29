@@ -12,6 +12,13 @@
 - name: Configure Apache.
   include_tasks: "configure-{{ ansible_os_family }}.yml"
 
+- include_tasks: site.yml
+  when: site.noReplication is not defined or hostname == site.mainWebServer
+  with_items: "{{ apache_vhosts }}"
+  loop_control:
+    loop_var: site
+
+
 - name: Ensure Apache has selected state and enabled on boot.
   service:
     name: "{{ apache_service }}"
