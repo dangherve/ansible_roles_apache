@@ -30,9 +30,9 @@
     ProxyPassReverse / http://{{ site.ip }}:{{ site.port }}/
     ProxyRequests off
 {% else %}
-    DocumentRoot {{ apache_document_root }}{{ site.servername }}
+    DocumentRoot {{ apache_document_root }}{{ site.servername }}{{ site.subDirectory |default('')}}
 
-    <Directory {{ apache_document_root }}{{ site.servername }}>
+    <Directory {{ apache_document_root }}{{ site.servername }}{{ site.subDirectory |default('')}}>
         Options Indexes FollowSymLinks MultiViews
         AllowOverride None
         Order allow,deny
