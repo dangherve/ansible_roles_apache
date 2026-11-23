@@ -18,6 +18,12 @@
   loop_control:
     loop_var: site
 
+- name: renew certicat
+  shell: "certbot renew --apache"
+  ignore_errors: yes
+  notify:
+    - restart apache
+
 
 - name: Ensure Apache has selected state and enabled on boot.
   service:

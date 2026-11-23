@@ -59,22 +59,3 @@
     certbot_type:  "standalone"
     option: "certonly"
   when:  output.stdout != 'active'
-
-- include_tasks: site.yml
-  when: site.noReplication is not defined or hostname == site.mainWebServer
-  with_items: "{{ apache_vhosts }}"
-  loop_control:
-    loop_var: site
-
-- name: renew certicat
-  shell: "certbot renew --apache"
-  ignore_errors: yes
-  notify:
-    - restart apache
-
-
-
-
-
-
-
